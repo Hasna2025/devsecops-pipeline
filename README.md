@@ -794,25 +794,24 @@ Corriger `app.py` :
 ```python
 """
 =============================================================
-  APP FLASK SÉCURISÉE — VERSION CORRIGÉE
-  Compatible Semgrep / Trivy / Snyk / ZAP
+  APP FLASK SÉCURISÉE — VERSION API (SANS HTML)
 =============================================================
 """
 
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify
 import sqlite3
 import os
 
 app = Flask(__name__)
 
-# ✅ FIX 3 : Secrets via variables d’environnement
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-key")
+# ✅ Secrets via variables d’environnement
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only")
 AWS_KEY    = os.environ.get("AWS_KEY")
 DB_PASS    = os.environ.get("DB_PASS")
 
 
 # ─────────────────────────────────────────────────────────────
-# ✅ FIX 1 : SQL Injection → requête paramétrée
+# ✅ SQL Injection FIX
 # ─────────────────────────────────────────────────────────────
 @app.route('/user')
 def get_user():
@@ -823,26 +822,26 @@ def get_user():
     conn.execute("INSERT INTO users VALUES (1, 'alice', 'alice@corp.com')")
     conn.execute("INSERT INTO users VALUES (2, 'bob', 'bob@corp.com')")
 
-    # ✅ Paramétré → protège contre SQL Injection
     query = "SELECT * FROM users WHERE name = ?"
     result = conn.execute(query, (username,)).fetchall()
 
-    return str(result)
+    return jsonify(result)
 
 
 # ─────────────────────────────────────────────────────────────
-# ✅ FIX 2 : XSS → render_template (PAS render_template_string)
+# ✅ XSS FIX → JSON (aucun rendu HTML)
 # ─────────────────────────────────────────────────────────────
 @app.route('/hello')
 def hello():
     name = request.args.get('name', 'World')
 
-    # ✅ SAFE → Jinja2 auto-escape
-    return render_template("hello.html", name=name)
+    return jsonify({
+        "message": f"Hello {name}"
+    })
 
 
 # ─────────────────────────────────────────────────────────────
-# ✅ FIX 4 : Path Traversal → validation du chemin
+# ✅ Path Traversal FIX
 # ─────────────────────────────────────────────────────────────
 @app.route('/read')
 def read_file():
@@ -853,27 +852,32 @@ def read_file():
 
     safe_path = os.path.abspath(os.path.join(safe_dir, filename))
 
-    # ✅ Vérification du chemin
     if not safe_path.startswith(safe_dir):
-        return "Accès refusé", 403
+        return jsonify({"error": "Accès refusé"}), 403
 
     if not os.path.exists(safe_path):
-        return "Fichier introuvable", 404
+        return jsonify({"error": "Fichier introuvable"}), 404
 
     with open(safe_path, 'r') as f:
-        return f.read()
+        return jsonify({"content": f.read()})
 
 
 # ─────────────────────────────────────────────────────────────
-# ✅ Page d’accueil
+# ✅ Index API
 # ─────────────────────────────────────────────────────────────
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return jsonify({
+        "status": "secure",
+        "endpoints": [
+            "/user?name=alice",
+            "/hello?name=World",
+            "/read?file=test.txt"
+        ]
+    })
 
 
 if __name__ == "__main__":
-    # ✅ FIX : debug désactivé + localhost uniquement
     app.run(host="127.0.0.1", port=5000, debug=False)
 ```
 
