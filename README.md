@@ -38,10 +38,9 @@ Construire un **pipeline de sécurité automatisé de bout en bout** qui :
 
 ## 🏗️ Architecture : les 5 stages
 
-```
+
 <img width="494" height="382" alt="image" src="https://github.com/user-attachments/assets/3ca5b741-86f9-4b0f-badc-b49cf9917e5c" />
-       
-```
+
 
 ---
 
