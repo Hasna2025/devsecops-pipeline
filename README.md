@@ -39,42 +39,8 @@ Construire un **pipeline de sécurité automatisé de bout en bout** qui :
 ## 🏗️ Architecture : les 5 stages
 
 ```
-Git Push / Pull Request
-        │
-        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   GitHub Actions Workflow                    │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │  STAGE 1    │  │  STAGE 2    │  │  STAGE 3    │         │
-│  │    SAST     │  │  CONTAINER  │  │    SCA      │         │
-│  │  Semgrep    │  │   Trivy     │  │   Snyk      │         │
-│  │             │  │             │  │             │         │
-│  │ Code source │  │ Image Docker│  │requirements │         │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘         │
-│         │                │                │                 │
-│         └────────────────┴────────────────┘                 │
-│                          │ needs: [1, 2]                    │
-│                          ▼                                  │
-│                  ┌─────────────┐                            │
-│                  │  STAGE 4    │                            │
-│                  │    DAST     │                            │
-│                  │ OWASP ZAP   │                            │
-│                  │ App en live │                            │
-│                  └──────┬──────┘                            │
-│                         │ needs: [1, 2, 3, 4]              │
-│                         ▼                                   │
-│                  ┌─────────────┐                            │
-│                  │  STAGE 5    │                            │
-│                  │  SECURITY   │                            │
-│                  │    GATE     │                            │
-│                  └──────┬──────┘                            │
-│                         │                                   │
-│              ┌──────────┴──────────┐                        │
-│              ▼                     ▼                        │
-│       ❌ BLOQUÉ              ✅ AUTORISÉ                    │
-│    (CRITICAL trouvée)      (Aucune CRITICAL)                │
-└─────────────────────────────────────────────────────────────┘
+<img width="494" height="382" alt="image" src="https://github.com/user-attachments/assets/3ca5b741-86f9-4b0f-badc-b49cf9917e5c" />
+       
 ```
 
 ---
