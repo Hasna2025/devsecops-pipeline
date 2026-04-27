@@ -901,6 +901,9 @@ git push origin fix/all-vulnerabilities
 
 <img width="820" height="323" alt="image" src="https://github.com/user-attachments/assets/1213e722-edcf-49e6-8ebd-76a2549bab4b" />
 
+<img width="895" height="268" alt="image" src="https://github.com/user-attachments/assets/053a7292-742b-483f-a058-76340be3cfe3" />
+
+
 
 ## 🛠️ Stack technique
 
