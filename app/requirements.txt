@@ -1,0 +1,28 @@
+# ─────────────────────────────────────────────────────────────
+# DÉPENDANCES VOLONTAIREMENT OBSOLÈTES — pour démontrer Trivy/Snyk
+# ─────────────────────────────────────────────────────────────
+
+# ❌ Flask 2.1.0 (publiée en 2022)
+#    CVE connues : CVE-2023-30861 (cookie sécurisé bypassable)
+#    Version sûre actuelle : Flask >= 3.0.3
+flask==2.1.0
+
+# ❌ Werkzeug 2.1.0 (dépendance de Flask)
+#    CVE-2023-25577 : DoS via multipart form data malformé
+#    CVE-2023-46136 : RCE via le debugger Werkzeug
+werkzeug==2.1.0
+
+# ❌ Jinja2 3.0.0
+#    CVE-2024-34064 : XSS via les filtres xmlattr non-échappés
+jinja2==3.0.0
+
+# ❌ requests 2.20.0
+#    CVE-2023-32681 : fuite de credentials via redirect cross-origin
+requests==2.20.0
+
+# ❌ cryptography 3.4.8
+#    Nombreuses CVEs dans les versions < 41.0.0
+cryptography==3.4.8
+
+# Pour la gestion des requêtes (version récente, pour ne pas tout casser)
+markupsafe>=2.0.0
