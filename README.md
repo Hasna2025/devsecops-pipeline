@@ -4,7 +4,14 @@ Stage 1 — Static Application Security Testing (SAST)
 
 Cette première phase du pipeline DevSecOps consiste à réaliser une analyse statique du code source (SAST) à l’aide de l’outil Semgrep.
 
-Semgrep analyse le code sans l’exécuter, en inspectant l’AST (Abstract Syntax Tree) afin de détecter automatiquement des vulnérabilités de sécurité.
+Qu’est-ce que Semgrep ?
+
+Semgrep (Semantic Grep) est un outil open-source de Static Application Security Testing (SAST).
+
+Il permet d’analyser le code source sans exécution, en recherchant des patterns dangereux dans la structure du code (AST - Abstract Syntax Tree).
+
+Il est largement utilisé en DevSecOps pour détecter les vulnérabilités dès la phase de développement.
+
 
  Objectif de cette étape
  
