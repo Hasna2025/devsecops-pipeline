@@ -1,0 +1,84 @@
+# =============================================================
+#  OWASP ZAP — Fichier de règles personnalisées
+#  Chemin attendu par le workflow : .zap/rules.tsv
+#
+#  Format : ID_règle [TAB] ACTION [TAB] Commentaire
+#  Actions possibles : IGNORE, WARN, FAIL
+#
+#  Consulter la liste complète des IDs :
+#  https://www.zaproxy.org/docs/alerts/
+# =============================================================
+
+# ─────────────────────────────────────────────────────────────
+# RÈGLES IGNORÉES (faux positifs fréquents en environnement de test)
+# ─────────────────────────────────────────────────────────────
+
+# 10015 : Incomplete or No Cache-control Header
+# → Normal en dev, on ignore pour ne pas polluer le rapport
+10015	IGNORE	Cache headers non requis en env de test
+
+# 10027 : Information Disclosure - Suspicious Comments
+# → Nos commentaires éducatifs déclencheraient cette règle
+10027	IGNORE	Commentaires éducatifs intentionnels
+
+# 10096 : Timestamp Disclosure
+10096	IGNORE	Timestamps non sensibles en env de test
+
+# 90033 : Loosely Scoped Cookie
+90033	IGNORE	Cookies de session non configurés en test
+
+# ─────────────────────────────────────────────────────────────
+# RÈGLES EN AVERTISSEMENT (WARN) — signalées mais ne bloquent pas
+# ─────────────────────────────────────────────────────────────
+
+# 10010 : Cookie No HttpOnly Flag
+10010	WARN	Cookie sans HttpOnly — à corriger en prod
+
+# 10011 : Cookie Without Secure Flag
+10011	WARN	Cookie sans flag Secure — à corriger en prod
+
+# 10017 : Cross-Domain JavaScript Source File Inclusion
+10017	WARN	Chargement JS cross-domain
+
+# 10020 : X-Frame-Options Header Not Set (Clickjacking)
+10020	WARN	Protection anti-clickjacking manquante
+
+# 10021 : X-Content-Type-Options Header Missing
+10021	WARN	Header X-Content-Type-Options absent
+
+# 10036 : Server Leaks Version Information via "Server" header
+10036	WARN	Version du serveur exposée dans les headers
+
+# 10038 : Content Security Policy (CSP) Header Not Set
+10038	WARN	CSP absent — risque XSS en prod
+
+# ─────────────────────────────────────────────────────────────
+# RÈGLES CRITIQUES (FAIL) — bloquent le pipeline si détectées
+# ─────────────────────────────────────────────────────────────
+
+# 40012 : Cross Site Scripting (Reflected) — OWASP A03
+40012	FAIL	XSS réfléchi détecté — CRITIQUE
+
+# 40014 : Cross Site Scripting (Persistent) — OWASP A03
+40014	FAIL	XSS persistant détecté — CRITIQUE
+
+# 40018 : SQL Injection — OWASP A03
+40018	FAIL	Injection SQL détectée — CRITIQUE
+
+# 40020 : SQL Injection (Hypersonic SQL) 
+40020	FAIL	Injection SQL HyperSQL détectée — CRITIQUE
+
+# 40021 : SQL Injection (MySQL)
+40021	FAIL	Injection SQL MySQL détectée — CRITIQUE
+
+# 40022 : SQL Injection (Oracle)
+40022	FAIL	Injection SQL Oracle détectée — CRITIQUE
+
+# 40024 : SQL Injection (SQLite)
+40024	FAIL	Injection SQL SQLite détectée — CRITIQUE
+
+# 90020 : Remote OS Command Injection
+90020	FAIL	Injection de commande OS — CRITIQUE
+
+# 6 : Path Traversal
+6	FAIL	Path traversal détecté — CRITIQUE
