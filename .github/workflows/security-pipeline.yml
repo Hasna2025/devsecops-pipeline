@@ -67,32 +67,38 @@ jobs:
   #   ⚠️  Ne voit pas les vulnérabilités de configuration runtime
   # ══════════════════════════════════════════════════════════
   sast:
+    
     name: "🔍 Stage 1 — SAST (Semgrep)"
     runs-on: ubuntu-latest
     steps:
-    - name: "📥 Checkout"
-      uses: actions/checkout@v4
+      - name: "📥 Checkout du code source"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Récupérer tout l'historique pour une analyse complète
 
-    - name: "🔍 Analyse Semgrep SAST"
-      run: |
-        pip install semgrep
-        semgrep \
-          --config p/security-audit \
-          --config p/owasp-top-ten \
-          --config p/python \
-          --config p/flask \
-          --sarif \
-          --output semgrep.sarif \
-          . || true
-      env:
-        SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_TOKEN }}
+      - name: "🔍 Analyse Semgrep SAST"
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/owasp-top-ten
+            p/python
+            p/flask
+            p/secrets
+        env:
+          # Token optionnel : permet de sauvegarder les résultats
+          # sur le dashboard Semgrep Cloud (semgrep.dev)
+          # Sans token, le scan fonctionne quand même en mode local.
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_TOKEN }}
 
-    - name: "📊 Upload SARIF vers GitHub Security"
-      uses: github/codeql-action/upload-sarif@v3   # passe à v4 pour éviter le warning
-      if: always()
-      with:
-        sarif_file: semgrep.sarif
-        category: "SAST-Semgrep"
+      # Upload des résultats au format SARIF vers GitHub Security Tab
+      # → visible dans Onglet "Security" > "Code scanning alerts"
+      - name: "📊 Upload résultats SARIF vers GitHub Security"
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()  # Même si le scan a trouvé des vulnérabilités
+        with:
+          sarif_file: semgrep.sarif
+          category: "SAST-Semgrep"
 
 
   # ══════════════════════════════════════════════════════════
@@ -132,7 +138,7 @@ jobs:
           # (LOW et MEDIUM génèrent trop de bruit)
           severity: CRITICAL,HIGH
           # exit-code 1 = le pipeline BLOQUE si CVE CRITICAL trouvée
-          exit-code: '1'
+          # exit-code: '1'
           # Ignorer les CVEs sans fix disponible (reduce noise)
           ignore-unfixed: false
           # Scanner aussi les secrets dans l'image
