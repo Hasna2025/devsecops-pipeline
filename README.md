@@ -295,6 +295,8 @@ git push origin fix/all-vulnerabilities
 
 ---
 
+<img width="854" height="214" alt="image" src="https://github.com/user-attachments/assets/560b0d24-aaa4-486b-97a7-d33cf0fb1627" />
+
 <img width="820" height="323" alt="image" src="https://github.com/user-attachments/assets/1213e722-edcf-49e6-8ebd-76a2549bab4b" />
 
 
