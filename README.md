@@ -792,23 +792,89 @@ git checkout -b fix/all-vulnerabilities
 Corriger `app.py` :
 
 ```python
-# ✅ Fix SQL Injection → requête paramétrée
-query = "SELECT * FROM users WHERE name = ?"
-conn.execute(query, (username,))
+"""
+=============================================================
+  APP FLASK SÉCURISÉE — VERSION CORRIGÉE
+  Compatible Semgrep / Trivy / Snyk / ZAP
+=============================================================
+"""
 
-# ✅ Fix XSS → render_template ou escape
-from markupsafe import escape
-return f"<h1>Hello {escape(name)}</h1>"
-
-# ✅ Fix Secrets → variables d'environnement
+from flask import Flask, request, render_template
+import sqlite3
 import os
-AWS_KEY = os.environ.get("AWS_KEY")
 
-# ✅ Fix Path Traversal → validation du chemin
-import os
-safe_path = os.path.abspath(f"/tmp/{filename}")
-if not safe_path.startswith("/tmp/"):
-    return "Accès refusé", 403
+app = Flask(__name__)
+
+# ✅ FIX 3 : Secrets via variables d’environnement
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-key")
+AWS_KEY    = os.environ.get("AWS_KEY")
+DB_PASS    = os.environ.get("DB_PASS")
+
+
+# ─────────────────────────────────────────────────────────────
+# ✅ FIX 1 : SQL Injection → requête paramétrée
+# ─────────────────────────────────────────────────────────────
+@app.route('/user')
+def get_user():
+    username = request.args.get('name', '')
+
+    conn = sqlite3.connect(':memory:')
+    conn.execute("CREATE TABLE users (id INT, name TEXT, email TEXT)")
+    conn.execute("INSERT INTO users VALUES (1, 'alice', 'alice@corp.com')")
+    conn.execute("INSERT INTO users VALUES (2, 'bob', 'bob@corp.com')")
+
+    # ✅ Paramétré → protège contre SQL Injection
+    query = "SELECT * FROM users WHERE name = ?"
+    result = conn.execute(query, (username,)).fetchall()
+
+    return str(result)
+
+
+# ─────────────────────────────────────────────────────────────
+# ✅ FIX 2 : XSS → render_template (PAS render_template_string)
+# ─────────────────────────────────────────────────────────────
+@app.route('/hello')
+def hello():
+    name = request.args.get('name', 'World')
+
+    # ✅ SAFE → Jinja2 auto-escape
+    return render_template("hello.html", name=name)
+
+
+# ─────────────────────────────────────────────────────────────
+# ✅ FIX 4 : Path Traversal → validation du chemin
+# ─────────────────────────────────────────────────────────────
+@app.route('/read')
+def read_file():
+    filename = request.args.get('file', '')
+
+    safe_dir = "/tmp/safe/"
+    os.makedirs(safe_dir, exist_ok=True)
+
+    safe_path = os.path.abspath(os.path.join(safe_dir, filename))
+
+    # ✅ Vérification du chemin
+    if not safe_path.startswith(safe_dir):
+        return "Accès refusé", 403
+
+    if not os.path.exists(safe_path):
+        return "Fichier introuvable", 404
+
+    with open(safe_path, 'r') as f:
+        return f.read()
+
+
+# ─────────────────────────────────────────────────────────────
+# ✅ Page d’accueil
+# ─────────────────────────────────────────────────────────────
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+
+if __name__ == "__main__":
+    # ✅ FIX : debug désactivé + localhost uniquement
+    app.run(host="127.0.0.1", port=5000, debug=False)
 ```
 
 Corriger `requirements.txt` :
