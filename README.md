@@ -295,6 +295,9 @@ git push origin fix/all-vulnerabilities
 
 ---
 
+<img width="820" height="323" alt="image" src="https://github.com/user-attachments/assets/1213e722-edcf-49e6-8ebd-76a2549bab4b" />
+
+
 ## 🛠️ Stack technique
 
 | Outil | Rôle | Type | Coût |
