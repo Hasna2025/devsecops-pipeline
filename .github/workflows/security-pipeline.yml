@@ -35,7 +35,8 @@ jobs:
             --config p/security-audit \
             --sarif \
             --output semgrep.sarif \
-            . || true
+
+# . || true
         # || true : Semgrep retourne exit code 1 si findings → on laisse
         # le Security Gate décider du blocage, pas ce step individuel
 
