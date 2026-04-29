@@ -77,23 +77,21 @@ jobs:
     - name: Install Semgrep
       run: pip install semgrep
 
-    # 🔥 IMPORTANT : mode simple et fiable
-    - name: Run Semgrep (force SARIF output)
+    - name: Run Semgrep and generate SARIF
       run: |
         semgrep scan \
           --config=auto \
           --sarif \
           > semgrep.sarif
 
-    - name: Debug file check
+    - name: Debug workspace
       run: |
-        echo "=== WORKSPACE FILES ==="
+        echo "FILES:"
         ls -la
-        echo "=== SARIF EXISTS ? ==="
+        echo "CHECK SARIF:"
         test -f semgrep.sarif && echo "OK" || echo "MISSING"
 
-    # 🛑 fallback obligatoire (évite ton erreur actuelle)
-    - name: Create SARIF if missing
+    - name: Fix missing file (safety fallback)
       run: |
         if [ ! -s semgrep.sarif ]; then
           echo '{"version":"2.1.0","runs":[]}' > semgrep.sarif
@@ -105,7 +103,6 @@ jobs:
       with:
         sarif_file: semgrep.sarif
         category: "SAST-Semgrep"
-
 
   # ══════════════════════════════════════════════════════════
   # STAGE 2 — Container Vulnerability Scan
