@@ -71,38 +71,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Install Semgrep
-      run: pip install semgrep
+      - name: Install Semgrep
+        run: pip install semgrep
 
-    - name: Run Semgrep and generate SARIF
-      run: |
-        semgrep scan \
-          --config=auto \
+      - name: Run Semgrep (proper SARIF output)
+        run: |
+          semgrep scan \
+           --config=auto \
           --sarif \
-          > semgrep.sarif
+           --output=semgrep.sarif
 
-    - name: Debug workspace
-      run: |
-        echo "FILES:"
-        ls -la
-        echo "CHECK SARIF:"
-        test -f semgrep.sarif && echo "OK" || echo "MISSING"
+      - name: Debug check
+        run: |
+         echo "FILES:"
+          ls -la
+          echo "SARIF SIZE:"
+          ls -lh semgrep.sarif || true
 
-    - name: Fix missing file (safety fallback)
-      run: |
-        if [ ! -s semgrep.sarif ]; then
-          echo '{"version":"2.1.0","runs":[]}' > semgrep.sarif
-        fi
+          - name: Ensure SARIF exists (critical fix)
+          run: |
+          if [ ! -s semgrep.sarif ]; then
+            echo '{"version":"2.1.0","runs":[]}' > semgrep.sarif
+          fi
 
-    - name: Upload SARIF
-      uses: github/codeql-action/upload-sarif@v4
-      if: always()
-      with:
-        sarif_file: semgrep.sarif
-        category: "SAST-Semgrep"
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: "SAST-Semgrep"
 
   # ══════════════════════════════════════════════════════════
   # STAGE 2 — Container Vulnerability Scan
