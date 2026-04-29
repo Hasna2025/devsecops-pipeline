@@ -71,38 +71,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Install Semgrep
         run: pip install semgrep
 
-      - name: Run Semgrep (proper SARIF output)
+      - name: Run Semgrep (JSON output instead)
         run: |
           semgrep scan \
-           --config=auto \
-          --sarif \
-           --output=semgrep.sarif
+          --config=auto \
+          --json > semgrep.json
 
-      - name: Debug check
+      - name: Convert JSON → SARIF
         run: |
-         echo "FILES:"
-          ls -la
-          echo "SARIF SIZE:"
-          ls -lh semgrep.sarif || true
-
-          - name: Ensure SARIF exists (critical fix)
-          run: |
-          if [ ! -s semgrep.sarif ]; then
-            echo '{"version":"2.1.0","runs":[]}' > semgrep.sarif
-          fi
+          pip install semgrep
+          semgrep convert --input semgrep.json --output semgrep.sarif
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
         with:
           sarif_file: semgrep.sarif
-          category: "SAST-Semgrep"
 
   # ══════════════════════════════════════════════════════════
   # STAGE 2 — Container Vulnerability Scan
