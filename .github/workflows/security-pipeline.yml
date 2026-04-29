@@ -21,39 +21,40 @@ jobs:
   sast:
     name: "🔍 Stage 1 — SAST (Semgrep)"
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: "🐍 Install Semgrep"
-        run: pip install semgrep
+    - name: Install Semgrep
+      run: pip install semgrep
 
-      - name: "🔍 Run Semgrep SAST"
-        run: |
-          semgrep \
-            --config p/python \
-            --config p/flask \
-            --config p/security-audit \
-            --sarif \
-            --output semgrep.sarif \
+    - name: Run Semgrep (generate SARIF)
+      run: |
+        semgrep scan \
+          --config="p/owasp-top-ten" \
+          --config="p/python" \
+          --config="p/flask" \
+          --config="p/secrets" \
+          --sarif > semgrep.sarif
 
-# . || true
-        # || true : Semgrep retourne exit code 1 si findings → on laisse
-        # le Security Gate décider du blocage, pas ce step individuel
+    - name: Debug check file
+      run: |
+        echo "📂 Files in workspace:"
+        ls -la
+        echo "📄 SARIF preview:"
+        head -n 20 semgrep.sarif || true
 
-      - name: "✅ Verify semgrep.sarif exists"
-        run: |
-          if [ ! -f semgrep.sarif ]; then
-            echo '{"version":"2.1.0","runs":[]}' > semgrep.sarif
-          fi
-          echo "semgrep.sarif size: $(wc -c < semgrep.sarif) bytes"
+    - name: Ensure file exists
+      run: |
+        test -f semgrep.sarif || echo '{"version":"2.1.0"}' > semgrep.sarif
 
-      # FIX : v3 → v4 (dépréciation décembre 2026)
-      - name: "📊 Upload SARIF → GitHub Security"
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: semgrep.sarif
-          category: "SAST-Semgrep"
+    - name: Upload SARIF
+      uses: github/codeql-action/upload-sarif@v4
+      if: always()
+      with:
+        sarif_file: semgrep.sarif
+        category: "SAST-Semgrep"
 
 
   # ════ STAGE 2 : Container Scan avec Trivy ════
