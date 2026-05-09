@@ -69,36 +69,39 @@ jobs:
   sast:
     name: "🔍 Stage 1 — SAST (Semgrep)"
     runs-on: ubuntu-latest
-
     steps:
-        - name: Install Semgrep
-          run: pip install semgrep
+      - uses: actions/checkout@v4
 
-        - name: Run Semgrep and generate SARIF
-          run: |
-            semgrep scan \
-              --config=auto \
-              --sarif \
-              --output=semgrep.sarif || true
+      - name: "🐍 Install Semgrep"
+        run: pip install semgrep
 
-        - name: Debug SARIF
-          run: |
-            echo "=== FILES ==="
-            ls -la
-            echo "=== FIND SARIF ==="
-            find . -name "*.sarif"
+      - name: "🔍 Scan + génération SARIF en une seule commande"
+        run: |
+          semgrep \
+            --config p/python \
+            --config p/flask \
+            --config p/secrets \
+            --sarif \
+            --output semgrep.sarif \
+            . || true
+        # Le || true empêche le step d'échouer ici
+        # C'est le Security Gate (Stage 5) qui gère la décision finale
 
-        - name: Ensure SARIF exists
-          run: |
-            if [ ! -f semgrep.sarif ]; then
-              echo '{"version":"2.1.0","runs":[]}' > semgrep.sarif
-            fi
+      - name: "✅ Vérifier que le fichier SARIF existe"
+        run: |
+          if [ -f semgrep.sarif ]; then
+            echo "semgrep.sarif généré avec succès"
+            cat semgrep.sarif | python3 -m json.tool | head -20
+          else
+            echo "ERREUR : semgrep.sarif introuvable"
+            exit 1
+          fi
 
-        - name: Upload SARIF
-          uses: github/codeql-action/upload-sarif@v4
-          with:
-            sarif_file: semgrep.sarif
-
+      - name: "📊 Upload SARIF vers GitHub Security"
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
 
   # ══════════════════════════════════════════════════════════
   # STAGE 2 — Container Vulnerability Scan
